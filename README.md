@@ -7,14 +7,12 @@ Système de documentation moderne pour checklogs.dev avec support Markdown et de
 ```
 /
 ├── index.html              # Page d'accueil de la documentation
-├── read.html               # Lecteur d'articles
-├── vercel.json             # Configuration Vercel
 ├── README.md               # Ce fichier
+└── read/
+    ├── index.html          # Lecteur d'articles
 └── pages/
     ├── api.md              # Documentation API REST
     ├── node-sdk.md         # Documentation SDK Node.js
-    ├── quick-start.md      # Guide de démarrage rapide
-    └── test.md             # Article de test
 ```
 
 ## 🔧 Comment ça fonctionne
@@ -23,7 +21,6 @@ Système de documentation moderne pour checklogs.dev avec support Markdown et de
 - `/` → Page d'accueil avec liste des articles
 - `/read/api` → Documentation API
 - `/read/node-sdk` → SDK Node.js
-- `/read/quick-start` → Guide rapide
 
 ### Auto-découverte
 Le système découvre automatiquement les articles dans `/pages/` et génère :
