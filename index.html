@@ -532,8 +532,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     
     <script>
-        // Articles avec contenu de fallback
-        const fallbackArticles = [
+        // Configuration GitHub
+        const GITHUB_REPO = 'https://raw.githubusercontent.com/Cut0x/chklgs.docs/main/pages';
+        
+        // Cache pour éviter les requêtes multiples
+        const articleCache = new Map();
+        
+        // Articles connus avec fallback
+        const knownArticles = [
             {
                 slug: 'quick-start',
                 title: 'Guide de démarrage rapide',
@@ -563,70 +569,49 @@
                 gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
                 lastModified: '2024-01-14',
                 readTime: '15 min'
-            },
-            {
-                slug: 'test',
-                title: 'Article de test',
-                description: 'Article de test pour vérifier que le système fonctionne',
-                category: 'Test',
-                icon: 'bi-bug',
-                gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-                lastModified: '2024-01-17',
-                readTime: '2 min'
             }
         ];
 
-        // Fonction pour découvrir les articles disponibles
-        async function discoverArticles() {
-            const knownArticles = ['quick-start', 'api', 'node-sdk', 'test'];
-            const articles = [];
+        // Fonction pour fetch depuis GitHub avec cache
+        async function fetchFromGitHub(slug) {
+            // Vérifier le cache
+            if (articleCache.has(slug)) {
+                console.log(`📦 Using cached content for: ${slug}`);
+                return articleCache.get(slug);
+            }
             
-            for (const slug of knownArticles) {
-                try {
-                    const response = await fetch(`/pages/${slug}.md`);
-                    if (response.ok) {
-                        const content = await response.text();
-                        const article = parseArticleMetadata(slug, content);
-                        articles.push(article);
-                        console.log(`✅ Loaded article from file: ${slug}`);
-                    } else {
-                        // Utiliser les articles de fallback
-                        const fallbackArticle = fallbackArticles.find(a => a.slug === slug);
-                        if (fallbackArticle) {
-                            articles.push(fallbackArticle);
-                            console.log(`📦 Using fallback for: ${slug}`);
-                        }
-                    }
-                } catch (error) {
-                    console.warn(`❌ Failed to load article ${slug}, using fallback`);
-                    // Utiliser les articles de fallback
-                    const fallbackArticle = fallbackArticles.find(a => a.slug === slug);
-                    if (fallbackArticle) {
-                        articles.push(fallbackArticle);
-                    }
+            try {
+                const url = `${GITHUB_REPO}/${slug}.md`;
+                console.log(`🔍 Fetching from GitHub: ${url}`);
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`GitHub fetch failed: ${response.status}`);
                 }
+                
+                const content = await response.text();
+                console.log(`✅ Loaded from GitHub: ${slug} (${content.length} chars)`);
+                
+                // Mettre en cache
+                articleCache.set(slug, content);
+                return content;
+                
+            } catch (error) {
+                console.warn(`❌ GitHub fetch failed for ${slug}:`, error.message);
+                return null;
             }
-            
-            // Si aucun article n'a été trouvé, utiliser tous les fallbacks
-            if (articles.length === 0) {
-                console.log('🔄 No articles found, using all fallbacks');
-                return fallbackArticles;
-            }
-            
-            console.log(`📚 Total articles loaded: ${articles.length}`);
-            return articles;
         }
 
-        // Parser les métadonnées d'un article depuis son contenu markdown
+        // Parser les métadonnées depuis le contenu markdown
         function parseArticleMetadata(slug, content) {
             const lines = content.split('\n');
             const title = lines.find(line => line.startsWith('# '))?.replace('# ', '') || slug;
             
-            // Extraire la description (premier paragraphe après le titre)
+            // Extraire la description
             let description = '';
             for (let i = 0; i < lines.length; i++) {
                 if (lines[i].startsWith('# ')) {
-                    // Chercher le premier paragraphe non vide après le titre
                     for (let j = i + 1; j < lines.length; j++) {
                         if (lines[j].trim() && !lines[j].startsWith('#') && !lines[j].startsWith('```')) {
                             description = lines[j].trim();
@@ -637,56 +622,123 @@
                 }
             }
             
-            // Catégorisation automatique basée sur le titre/contenu
-            let category = 'Guide';
-            let icon = 'bi-book';
-            let gradient = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            // Trouver l'article de base pour les métadonnées
+            const baseArticle = knownArticles.find(a => a.slug === slug);
             
-            if (title.toLowerCase().includes('api') || content.includes('endpoint')) {
-                category = 'API';
-                icon = 'bi-code-slash';
-                gradient = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-            } else if (title.toLowerCase().includes('sdk') || title.toLowerCase().includes('node')) {
-                category = 'SDK';
-                icon = 'bi-box';
-                gradient = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
-            } else if (title.toLowerCase().includes('quick') || title.toLowerCase().includes('start')) {
-                category = 'Guide';
-                icon = 'bi-rocket-takeoff';
-                gradient = 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)';
-            } else if (title.toLowerCase().includes('practice') || title.toLowerCase().includes('pratique')) {
-                category = 'Guide';
-                icon = 'bi-award';
-                gradient = 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)';
-            } else if (title.toLowerCase().includes('auth') || title.toLowerCase().includes('securit')) {
-                category = 'Sécurité';
-                icon = 'bi-shield-lock';
-                gradient = 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)';
-            } else if (title.toLowerCase().includes('webhook') || title.toLowerCase().includes('alert')) {
-                category = 'Intégration';
-                icon = 'bi-bell';
-                gradient = 'linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)';
+            if (baseArticle) {
+                return {
+                    ...baseArticle,
+                    title,
+                    description: description || baseArticle.description
+                };
             }
-
-            // Estimation du temps de lecture
-            const wordCount = content.split(/\s+/).length;
-            const readTime = Math.max(1, Math.ceil(wordCount / 200)) + ' min';
             
+            // Fallback pour articles inconnus
             return {
                 slug,
                 title,
                 description: description || 'Documentation checklogs.dev',
-                category,
-                icon,
-                gradient,
-                lastModified: new Date().toISOString().split('T')[0], // Date du jour par défaut
-                readTime
+                category: 'Guide',
+                icon: 'bi-book',
+                gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                lastModified: new Date().toISOString().split('T')[0],
+                readTime: Math.max(1, Math.ceil(content.split(/\s+/).length / 200)) + ' min'
             };
         }
 
-        // Fonction pour générer l'URL de lecture simplifiée
-        function generateReadUrl(article) {
-            return `/read/${article.slug}`;
+        // Découvrir les articles avec GitHub
+        async function discoverArticles() {
+            const articles = [];
+            
+            // Traiter les articles connus en parallèle (max 3 requêtes simultanées)
+            const promises = knownArticles.map(async (baseArticle) => {
+                try {
+                    const content = await fetchFromGitHub(baseArticle.slug);
+                    
+                    if (content) {
+                        // Parser le contenu GitHub
+                        return parseArticleMetadata(baseArticle.slug, content);
+                    } else {
+                        // Utiliser l'article de base comme fallback
+                        console.log(`📦 Using fallback for: ${baseArticle.slug}`);
+                        return baseArticle;
+                    }
+                } catch (error) {
+                    console.warn(`❌ Error processing ${baseArticle.slug}:`, error);
+                    return baseArticle;
+                }
+            });
+            
+            // Attendre toutes les requêtes avec timeout
+            try {
+                const results = await Promise.allSettled(promises);
+                
+                results.forEach((result, index) => {
+                    if (result.status === 'fulfilled' && result.value) {
+                        articles.push(result.value);
+                    } else {
+                        // Fallback vers l'article de base
+                        articles.push(knownArticles[index]);
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Error loading articles:', error);
+                // Utiliser tous les fallbacks
+                return knownArticles;
+            }
+            
+            console.log(`📚 Total articles loaded: ${articles.length}`);
+            return articles;
+        }
+
+        // Rendre les articles
+        function renderArticles(articles) {
+            const container = document.getElementById('articles-container');
+            
+            if (articles.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12 text-center">
+                        <div class="card">
+                            <div class="card-body p-5">
+                                <i class="bi bi-journal-x" style="font-size: 4rem; color: var(--text-muted);"></i>
+                                <h3 style="margin-top: 2rem; color: var(--text-primary);">Aucun article disponible</h3>
+                                <p style="color: var(--text-muted);">Les articles de documentation seront bientôt disponibles.</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            const articlesHtml = articles.map((article, index) => `
+                <a href="/read/${article.slug}" class="article-card" style="animation-delay: ${index * 0.1}s;">
+                    <div class="article-header" style="background: ${article.gradient};">
+                        <div class="article-category">${article.category}</div>
+                        <i class="article-icon ${article.icon}"></i>
+                    </div>
+                    <div class="article-body">
+                        <h3 class="article-title">${article.title}</h3>
+                        <p class="article-description">${article.description}</p>
+                        <div class="article-meta">
+                            <span>Mis à jour le ${formatDate(article.lastModified)}</span>
+                            <span>${article.readTime} de lecture</span>
+                        </div>
+                    </div>
+                </a>
+            `).join('');
+            
+            container.innerHTML = articlesHtml;
+        }
+
+        // Fonction pour formater la date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
         }
 
         // Fonction pour formater la date
@@ -786,23 +838,15 @@
             initSmoothScrolling();
             
             try {
-                // Découvrir et charger les articles
+                // Charger les articles depuis GitHub
                 const articles = await discoverArticles();
                 renderArticles(articles);
                 setTimeout(animateCards, 100);
             } catch (error) {
                 console.error('Failed to load articles:', error);
-                document.getElementById('articles-container').innerHTML = `
-                    <div class="col-12 text-center">
-                        <div class="card">
-                            <div class="card-body p-5">
-                                <i class="bi bi-exclamation-triangle" style="font-size: 4rem; color: var(--warning-color);"></i>
-                                <h3 style="margin-top: 2rem; color: var(--text-primary);">Erreur de chargement</h3>
-                                <p style="color: var(--text-muted);">Impossible de charger les articles. Veuillez rafraîchir la page.</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                // Fallback vers les articles de base
+                renderArticles(knownArticles);
+                setTimeout(animateCards, 100);
             }
         });
 
