@@ -532,164 +532,158 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     
     <script>
-        // Configuration GitHub
-        const GITHUB_REPO = 'https://raw.githubusercontent.com/Cut0x/chklgs.docs/main/pages';
+        // Configuration GitHub - AUCUNE DONNÉE PAR DÉFAUT
+        const GITHUB_API = 'https://api.github.com/repos/Cut0x/chklgs.docs/contents/pages';
+        const GITHUB_RAW = 'https://raw.githubusercontent.com/Cut0x/chklgs.docs/main/pages';
         
-        // Cache pour éviter les requêtes multiples
-        const articleCache = new Map();
-        
-        // Articles connus avec fallback
-        const knownArticles = [
-            {
-                slug: 'quick-start',
-                title: 'Guide de démarrage rapide',
-                description: 'Commencez à utiliser checklogs.dev en moins de 5 minutes',
-                category: 'Guide',
-                icon: 'bi-rocket-takeoff',
-                gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-                lastModified: '2024-01-16',
-                readTime: '5 min'
-            },
-            {
-                slug: 'api',
-                title: 'API REST Documentation',
-                description: 'Documentation complète de l\'API REST pour envoyer et récupérer vos logs',
-                category: 'API',
-                icon: 'bi-code-slash',
-                gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                lastModified: '2024-01-15',
-                readTime: '10 min'
-            },
-            {
-                slug: 'node-sdk',
-                title: 'SDK Node.js',
-                description: 'Guide complet pour utiliser le SDK Node.js officiel de checklogs.dev',
-                category: 'SDK',
-                icon: 'bi-box',
-                gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                lastModified: '2024-01-14',
-                readTime: '15 min'
-            }
-        ];
+        // Cache
+        const cache = new Map();
 
-        // Fonction pour fetch depuis GitHub avec cache
-        async function fetchFromGitHub(slug) {
-            // Vérifier le cache
-            if (articleCache.has(slug)) {
-                console.log(`📦 Using cached content for: ${slug}`);
-                return articleCache.get(slug);
-            }
-            
+        // Découvrir automatiquement tous les articles depuis GitHub
+        async function discoverArticles() {
             try {
-                const url = `${GITHUB_REPO}/${slug}.md`;
-                console.log(`🔍 Fetching from GitHub: ${url}`);
+                console.log('🔍 Discovering articles from GitHub API...');
                 
-                const response = await fetch(url);
+                // Lister les fichiers dans /pages/
+                const response = await fetch(GITHUB_API);
                 
                 if (!response.ok) {
-                    throw new Error(`GitHub fetch failed: ${response.status}`);
+                    throw new Error(`GitHub API failed: ${response.status}`);
                 }
                 
-                const content = await response.text();
-                console.log(`✅ Loaded from GitHub: ${slug} (${content.length} chars)`);
+                const files = await response.json();
+                console.log('📁 Found files:', files.length);
                 
-                // Mettre en cache
-                articleCache.set(slug, content);
-                return content;
+                // Filtrer seulement les fichiers .md
+                const mdFiles = files.filter(file => 
+                    file.type === 'file' && 
+                    file.name.endsWith('.md') &&
+                    file.name !== 'README.md'
+                );
+                
+                console.log('📝 Markdown files:', mdFiles.map(f => f.name));
+                
+                if (mdFiles.length === 0) {
+                    console.log('❌ No markdown files found');
+                    return [];
+                }
+                
+                // Charger le contenu de chaque fichier en parallèle
+                const articlePromises = mdFiles.map(async (file) => {
+                    const slug = file.name.replace('.md', '');
+                    
+                    try {
+                        const content = await fetchContent(slug);
+                        if (content) {
+                            return parseArticle(slug, content);
+                        }
+                    } catch (error) {
+                        console.warn(`❌ Failed to load ${slug}:`, error.message);
+                    }
+                    return null;
+                });
+                
+                const results = await Promise.allSettled(articlePromises);
+                const articles = results
+                    .filter(result => result.status === 'fulfilled' && result.value)
+                    .map(result => result.value);
+                
+                console.log(`✅ Successfully loaded ${articles.length} articles`);
+                return articles;
                 
             } catch (error) {
-                console.warn(`❌ GitHub fetch failed for ${slug}:`, error.message);
-                return null;
+                console.error('❌ Failed to discover articles:', error.message);
+                return [];
             }
         }
 
-        // Parser les métadonnées depuis le contenu markdown
-        function parseArticleMetadata(slug, content) {
-            const lines = content.split('\n');
-            const title = lines.find(line => line.startsWith('# '))?.replace('# ', '') || slug;
+        // Fetch le contenu d'un article
+        async function fetchContent(slug) {
+            if (cache.has(slug)) {
+                return cache.get(slug);
+            }
             
-            // Extraire la description
+            const url = `${GITHUB_RAW}/${slug}.md`;
+            console.log(`📥 Fetching: ${slug}`);
+            
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch ${slug}: ${response.status}`);
+            }
+            
+            const content = await response.text();
+            cache.set(slug, content);
+            return content;
+        }
+
+        // Parser un article depuis son contenu markdown
+        function parseArticle(slug, content) {
+            const lines = content.split('\n');
+            
+            // Extraire le titre (premier # trouve)
+            const titleLine = lines.find(line => line.trim().startsWith('# '));
+            const title = titleLine ? titleLine.replace(/^#+\s*/, '').trim() : slug;
+            
+            // Extraire la description (premier paragraphe après le titre)
             let description = '';
-            for (let i = 0; i < lines.length; i++) {
-                if (lines[i].startsWith('# ')) {
-                    for (let j = i + 1; j < lines.length; j++) {
-                        if (lines[j].trim() && !lines[j].startsWith('#') && !lines[j].startsWith('```')) {
-                            description = lines[j].trim();
-                            break;
-                        }
-                    }
+            let foundTitle = false;
+            
+            for (const line of lines) {
+                if (line.trim().startsWith('#')) {
+                    foundTitle = true;
+                    continue;
+                }
+                
+                if (foundTitle && line.trim() && !line.startsWith('```')) {
+                    description = line.trim();
                     break;
                 }
             }
             
-            // Trouver l'article de base pour les métadonnées
-            const baseArticle = knownArticles.find(a => a.slug === slug);
+            // Auto-détection de la catégorie
+            const lowerContent = content.toLowerCase();
+            const lowerTitle = title.toLowerCase();
             
-            if (baseArticle) {
-                return {
-                    ...baseArticle,
-                    title,
-                    description: description || baseArticle.description
-                };
+            let category = 'Documentation';
+            let icon = 'bi-file-text';
+            let gradient = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            
+            if (lowerTitle.includes('api') || lowerContent.includes('endpoint') || lowerContent.includes('curl')) {
+                category = 'API';
+                icon = 'bi-code-slash';
+                gradient = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            } else if (lowerTitle.includes('sdk') || lowerTitle.includes('node') || lowerContent.includes('npm install')) {
+                category = 'SDK';
+                icon = 'bi-box';
+                gradient = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
+            } else if (lowerTitle.includes('guide') || lowerTitle.includes('start') || lowerTitle.includes('quick')) {
+                category = 'Guide';
+                icon = 'bi-rocket-takeoff';
+                gradient = 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)';
+            } else if (lowerTitle.includes('auth') || lowerTitle.includes('sécurité') || lowerTitle.includes('security')) {
+                category = 'Sécurité';
+                icon = 'bi-shield-lock';
+                gradient = 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)';
+            } else if (lowerTitle.includes('webhook') || lowerTitle.includes('alert')) {
+                category = 'Intégration';
+                icon = 'bi-bell';
+                gradient = 'linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)';
             }
             
-            // Fallback pour articles inconnus
+            // Calculer le temps de lecture
+            const wordCount = content.split(/\s+/).length;
+            const readTime = Math.max(1, Math.ceil(wordCount / 200)) + ' min';
+            
             return {
                 slug,
                 title,
                 description: description || 'Documentation checklogs.dev',
-                category: 'Guide',
-                icon: 'bi-book',
-                gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                category,
+                icon,
+                gradient,
                 lastModified: new Date().toISOString().split('T')[0],
-                readTime: Math.max(1, Math.ceil(content.split(/\s+/).length / 200)) + ' min'
+                readTime
             };
-        }
-
-        // Découvrir les articles avec GitHub
-        async function discoverArticles() {
-            const articles = [];
-            
-            // Traiter les articles connus en parallèle (max 3 requêtes simultanées)
-            const promises = knownArticles.map(async (baseArticle) => {
-                try {
-                    const content = await fetchFromGitHub(baseArticle.slug);
-                    
-                    if (content) {
-                        // Parser le contenu GitHub
-                        return parseArticleMetadata(baseArticle.slug, content);
-                    } else {
-                        // Utiliser l'article de base comme fallback
-                        console.log(`📦 Using fallback for: ${baseArticle.slug}`);
-                        return baseArticle;
-                    }
-                } catch (error) {
-                    console.warn(`❌ Error processing ${baseArticle.slug}:`, error);
-                    return baseArticle;
-                }
-            });
-            
-            // Attendre toutes les requêtes avec timeout
-            try {
-                const results = await Promise.allSettled(promises);
-                
-                results.forEach((result, index) => {
-                    if (result.status === 'fulfilled' && result.value) {
-                        articles.push(result.value);
-                    } else {
-                        // Fallback vers l'article de base
-                        articles.push(knownArticles[index]);
-                    }
-                });
-                
-            } catch (error) {
-                console.error('Error loading articles:', error);
-                // Utiliser tous les fallbacks
-                return knownArticles;
-            }
-            
-            console.log(`📚 Total articles loaded: ${articles.length}`);
-            return articles;
         }
 
         // Rendre les articles
@@ -701,9 +695,16 @@
                     <div class="col-12 text-center">
                         <div class="card">
                             <div class="card-body p-5">
-                                <i class="bi bi-journal-x" style="font-size: 4rem; color: var(--text-muted);"></i>
-                                <h3 style="margin-top: 2rem; color: var(--text-primary);">Aucun article disponible</h3>
-                                <p style="color: var(--text-muted);">Les articles de documentation seront bientôt disponibles.</p>
+                                <i class="bi bi-github" style="font-size: 4rem; color: var(--text-muted);"></i>
+                                <h3 style="margin-top: 2rem; color: var(--text-primary);">Aucun article trouvé</h3>
+                                <p style="color: var(--text-muted); margin-bottom: 2rem;">
+                                    Aucun fichier .md trouvé dans le repository GitHub.<br>
+                                    <code>Cut0x/chklgs.docs/pages/</code>
+                                </p>
+                                <a href="https://github.com/Cut0x/chklgs.docs" target="_blank" class="btn btn-primary">
+                                    <i class="bi bi-github"></i>
+                                    Voir le repository
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -721,7 +722,7 @@
                         <h3 class="article-title">${article.title}</h3>
                         <p class="article-description">${article.description}</p>
                         <div class="article-meta">
-                            <span>Mis à jour le ${formatDate(article.lastModified)}</span>
+                            <span>Découvert automatiquement</span>
                             <span>${article.readTime} de lecture</span>
                         </div>
                     </div>
