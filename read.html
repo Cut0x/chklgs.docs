@@ -740,13 +740,318 @@
             `;
         }
 
+        // Fallback content for when .md files aren't available
+        const fallbackContent = {
+            'test': `# Article de test
+
+Ceci est un article de test pour vérifier que le système de documentation fonctionne correctement.
+
+## Section 1
+
+Voici du contenu de base avec du **texte en gras** et de l'_italique_.
+
+### Sous-section
+
+Une liste à puces :
+- Premier élément
+- Deuxième élément  
+- Troisième élément
+
+## Section 2
+
+Voici un exemple de code :
+
+\`\`\`javascript
+const { createLogger } = require('@checklogs/node-sdk');
+
+const logger = createLogger('your-api-key');
+
+await logger.info('Test message');
+\`\`\`
+
+## Section 3
+
+> Ceci est une citation pour tester le rendu des blockquotes.
+
+Et voici un tableau :
+
+| Colonne 1 | Colonne 2 | Colonne 3 |
+|-----------|-----------|-----------|
+| Valeur 1  | Valeur 2  | Valeur 3  |
+| Valeur A  | Valeur B  | Valeur C  |
+
+## Conclusion
+
+Si vous voyez cet article, le système fonctionne ! 🎉`,
+
+            'quick-start': `# Guide de démarrage rapide
+
+Commencez à utiliser checklogs.dev en moins de 5 minutes !
+
+## Étape 1 : Création du compte
+
+1. Rendez-vous sur [checklogs.dev](https://checklogs.dev)
+2. Cliquez sur **"Commencer Gratuitement"**
+3. Créez votre compte avec votre email
+
+## Étape 2 : Créer votre première application
+
+1. Connectez-vous à votre tableau de bord
+2. Cliquez sur **"Créer une application"**
+3. Remplissez les informations :
+   - **Nom** : \`Ma première app\`
+   - **Langage** : \`Node.js\`
+   - **Environnement** : \`Development\`
+
+✅ **Votre clé API est générée automatiquement !**
+
+## Étape 3 : Premier log
+
+### Avec curl
+
+\`\`\`bash
+curl -X POST https://checklogs.dev/api/logs \\
+  -H "Authorization: Bearer VOTRE_CLE_API" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "message": "Mon premier log !",
+    "level": "info"
+  }'
+\`\`\`
+
+### Avec le SDK Node.js
+
+\`\`\`bash
+npm install @checklogs/node-sdk
+\`\`\`
+
+\`\`\`javascript
+const { createLogger } = require('@checklogs/node-sdk');
+
+const logger = createLogger('VOTRE_CLE_API');
+
+async function test() {
+  await logger.info('Mon premier log !', {
+    test: true,
+    user: 'guide-quickstart'
+  });
+  
+  console.log('✅ Log envoyé avec succès !');
+}
+
+test();
+\`\`\`
+
+## Étape 4 : Vérifier dans le dashboard
+
+Retournez sur votre tableau de bord pour voir vos logs !
+
+## Étape 5 : Intégration Express.js
+
+\`\`\`javascript
+const express = require('express');
+const { createLogger } = require('@checklogs/node-sdk');
+
+const app = express();
+const logger = createLogger('VOTRE_CLE_API');
+
+app.use((req, res, next) => {
+  req.logger = logger.child({
+    method: req.method,
+    url: req.url
+  });
+  next();
+});
+
+app.get('/users/:id', async (req, res) => {
+  req.logger.info('Récupération utilisateur', {
+    user_id: req.params.id
+  });
+  
+  res.json({ id: req.params.id, name: 'John Doe' });
+});
+
+app.listen(3000, () => {
+  logger.info('Serveur démarré', { port: 3000 });
+});
+\`\`\`
+
+🎉 **Félicitations !** Vous avez configuré votre monitoring en quelques minutes.`,
+
+            'api': `# API REST Documentation
+
+L'API REST de checklogs.dev vous permet d'intégrer facilement le monitoring de logs dans vos applications.
+
+## URL de base
+
+\`\`\`
+https://checklogs.dev/api/logs
+\`\`\`
+
+## Authentification
+
+Toutes les requêtes API nécessitent une authentification via une clé API.
+
+### Header d'authentification
+
+\`\`\`http
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+\`\`\`
+
+## Créer un log
+
+**POST** \`/api/logs\`
+
+### Exemple de requête
+
+\`\`\`javascript
+const response = await fetch('https://checklogs.dev/api/logs', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    message: 'User logged in successfully',
+    level: 'info',
+    context: {
+      user_id: 123,
+      ip_address: '192.168.1.1'
+    }
+  })
+});
+\`\`\`
+
+## Récupérer les logs
+
+**GET** \`/api/logs\`
+
+### Paramètres
+
+- \`limit\`: Nombre de logs (max 1000)
+- \`offset\`: Décalage pour pagination
+- \`level\`: Filtrer par niveau
+- \`since\`: Date de début
+
+### Exemple
+
+\`\`\`javascript
+const response = await fetch('https://checklogs.dev/api/logs?limit=50&level=error', {
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY'
+  }
+});
+\`\`\`
+
+## Niveaux de logs
+
+- **debug** - Informations de débogage
+- **info** - Informations générales
+- **warning** - Situations problématiques
+- **error** - Erreurs d'application
+- **critical** - Erreurs critiques`,
+
+            'node-sdk': `# SDK Node.js Official
+
+Le SDK Node.js officiel de checklogs.dev simplifie l'intégration du monitoring.
+
+## Installation
+
+\`\`\`bash
+npm install @checklogs/node-sdk
+\`\`\`
+
+## Démarrage rapide
+
+### CommonJS
+
+\`\`\`javascript
+const { createLogger } = require('@checklogs/node-sdk');
+
+const logger = createLogger('your-api-key');
+
+await logger.info('Application started');
+await logger.error('Something went wrong', { error_code: 500 });
+\`\`\`
+
+### ES Modules
+
+\`\`\`javascript
+import { createLogger } from '@checklogs/node-sdk';
+
+const logger = createLogger('your-api-key');
+
+await logger.info('Application started');
+\`\`\`
+
+## Classes principales
+
+### CheckLogsClient
+
+\`\`\`javascript
+const { CheckLogsClient } = require('@checklogs/node-sdk');
+
+const client = new CheckLogsClient('your-api-key');
+
+// Envoyer un log
+await client.log({
+  message: 'User logged in',
+  level: 'info',
+  context: { user_id: 123 }
+});
+\`\`\`
+
+### CheckLogsLogger
+
+\`\`\`javascript
+const logger = new CheckLogsLogger('your-api-key', {
+  source: 'my-app',
+  defaultContext: { version: '1.0.0' },
+  consoleOutput: true
+});
+
+await logger.info('Info message');
+await logger.error('Error message');
+\`\`\`
+
+## Child Loggers
+
+\`\`\`javascript
+const mainLogger = new CheckLogsLogger('api-key');
+const userLogger = mainLogger.child({ module: 'user' });
+
+await userLogger.info('User created'); // Hérite du contexte parent
+\`\`\`
+
+## Middleware Express
+
+\`\`\`javascript
+const express = require('express');
+const { createLogger } = require('@checklogs/node-sdk');
+
+const app = express();
+const logger = createLogger('your-api-key');
+
+app.use((req, res, next) => {
+  req.logger = logger.child({
+    request_id: Math.random().toString(36),
+    method: req.method,
+    url: req.url
+  });
+  next();
+});
+\`\`\``
+        };
+
         // Generate navigation between articles
         async function generateNavigation(currentSlug) {
-            const knownArticles = ['quick-start', 'api', 'node-sdk'];
+            const knownArticles = ['quick-start', 'api', 'node-sdk', 'test'];
             const articleTitles = {
                 'quick-start': 'Guide de démarrage rapide',
                 'api': 'API REST Documentation', 
-                'node-sdk': 'SDK Node.js'
+                'node-sdk': 'SDK Node.js',
+                'test': 'Article de test'
             };
             
             const currentIndex = knownArticles.indexOf(currentSlug);
