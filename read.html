@@ -620,6 +620,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
     
     <script>
+        // Configuration GitHub - identique à index.html
+        const GITHUB_RAW = 'https://raw.githubusercontent.com/Cut0x/chklgs.docs/main/pages';
+        
         // Get article slug from URL
         function getArticleSlug() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -677,10 +680,10 @@
             };
         }
 
-        // Load markdown content
+        // Load markdown content depuis GitHub
         async function loadMarkdownContent(slug) {
             try {
-                const response = await fetch(`/pages/${slug}.md`);
+                const response = await fetch(`${GITHUB_RAW}/${slug}.md`);
                 if (!response.ok) {
                     throw new Error(`Failed to load article: ${response.status}`);
                 }
@@ -783,100 +786,6 @@ Et voici un tableau :
 ## Conclusion
 
 Si vous voyez cet article, le système fonctionne ! 🎉`,
-
-            'quick-start': `# Guide de démarrage rapide
-
-Commencez à utiliser checklogs.dev en moins de 5 minutes !
-
-## Étape 1 : Création du compte
-
-1. Rendez-vous sur [checklogs.dev](https://checklogs.dev)
-2. Cliquez sur **"Commencer Gratuitement"**
-3. Créez votre compte avec votre email
-
-## Étape 2 : Créer votre première application
-
-1. Connectez-vous à votre tableau de bord
-2. Cliquez sur **"Créer une application"**
-3. Remplissez les informations :
-   - **Nom** : \`Ma première app\`
-   - **Langage** : \`Node.js\`
-   - **Environnement** : \`Development\`
-
-✅ **Votre clé API est générée automatiquement !**
-
-## Étape 3 : Premier log
-
-### Avec curl
-
-\`\`\`bash
-curl -X POST https://checklogs.dev/api/logs \\
-  -H "Authorization: Bearer VOTRE_CLE_API" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "message": "Mon premier log !",
-    "level": "info"
-  }'
-\`\`\`
-
-### Avec le SDK Node.js
-
-\`\`\`bash
-npm install @checklogs/node-sdk
-\`\`\`
-
-\`\`\`javascript
-const { createLogger } = require('@checklogs/node-sdk');
-
-const logger = createLogger('VOTRE_CLE_API');
-
-async function test() {
-  await logger.info('Mon premier log !', {
-    test: true,
-    user: 'guide-quickstart'
-  });
-  
-  console.log('✅ Log envoyé avec succès !');
-}
-
-test();
-\`\`\`
-
-## Étape 4 : Vérifier dans le dashboard
-
-Retournez sur votre tableau de bord pour voir vos logs !
-
-## Étape 5 : Intégration Express.js
-
-\`\`\`javascript
-const express = require('express');
-const { createLogger } = require('@checklogs/node-sdk');
-
-const app = express();
-const logger = createLogger('VOTRE_CLE_API');
-
-app.use((req, res, next) => {
-  req.logger = logger.child({
-    method: req.method,
-    url: req.url
-  });
-  next();
-});
-
-app.get('/users/:id', async (req, res) => {
-  req.logger.info('Récupération utilisateur', {
-    user_id: req.params.id
-  });
-  
-  res.json({ id: req.params.id, name: 'John Doe' });
-});
-
-app.listen(3000, () => {
-  logger.info('Serveur démarré', { port: 3000 });
-});
-\`\`\`
-
-🎉 **Félicitations !** Vous avez configuré votre monitoring en quelques minutes.`,
 
             'api': `# API REST Documentation
 
@@ -1046,9 +955,8 @@ app.use((req, res, next) => {
 
         // Generate navigation between articles
         async function generateNavigation(currentSlug) {
-            const knownArticles = ['quick-start', 'api', 'node-sdk', 'test'];
+            const knownArticles = ['api', 'node-sdk', 'test'];
             const articleTitles = {
-                'quick-start': 'Guide de démarrage rapide',
                 'api': 'API REST Documentation', 
                 'node-sdk': 'SDK Node.js',
                 'test': 'Article de test'
@@ -1065,7 +973,7 @@ app.use((req, res, next) => {
             
             if (prevSlug) {
                 navHtml += `
-                    <a href="/read/${prevSlug}" class="nav-article">
+                    <a href="/read.html?article=${prevSlug}" class="nav-article">
                         <i class="bi bi-arrow-left" style="font-size: 1.5rem;"></i>
                         <div class="nav-article-content">
                             <div class="nav-article-label">Précédent</div>
@@ -1079,7 +987,7 @@ app.use((req, res, next) => {
             
             if (nextSlug) {
                 navHtml += `
-                    <a href="/read/${nextSlug}" class="nav-article" style="text-align: right;">
+                    <a href="/read.html?article=${nextSlug}" class="nav-article" style="text-align: right;">
                         <div class="nav-article-content">
                             <div class="nav-article-label">Suivant</div>
                             <div class="nav-article-title">${articleTitles[nextSlug]}</div>
@@ -1163,12 +1071,20 @@ app.use((req, res, next) => {
                 return;
             }
             
-            // Load markdown content
-            const markdownContent = await loadMarkdownContent(slug);
+            // Try to load from GitHub first, then fallback
+            let markdownContent = await loadMarkdownContent(slug);
             
             if (!markdownContent) {
-                showError('Article non trouvé', `L'article "${slug}" n'existe pas dans notre documentation.`);
-                return;
+                // Fallback to predefined content
+                markdownContent = fallbackContent[slug];
+                
+                if (!markdownContent) {
+                    showError('Article non trouvé', `L'article "${slug}" n'existe pas dans notre documentation.`);
+                    return;
+                }
+                console.log(`📝 Using fallback content for: ${slug}`);
+            } else {
+                console.log(`✅ Loaded from GitHub: ${slug}`);
             }
             
             // Parse article metadata

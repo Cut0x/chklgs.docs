@@ -532,12 +532,51 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     
     <script>
-        // Configuration GitHub - AUCUNE DONNÉE PAR DÉFAUT
+        // Configuration GitHub
         const GITHUB_API = 'https://api.github.com/repos/Cut0x/chklgs.docs/contents/pages';
         const GITHUB_RAW = 'https://raw.githubusercontent.com/Cut0x/chklgs.docs/main/pages';
         
         // Cache
         const cache = new Map();
+
+        // Fonction pour générer l'URL de lecture
+        function generateReadUrl(article) {
+            return `/read.html?article=${article.slug}`;
+        }
+
+        // Articles de base en cas d'échec
+        const fallbackArticles = [
+            {
+                slug: 'api',
+                title: 'API REST Documentation',
+                description: 'Documentation complète de l\'API REST checklogs.dev',
+                category: 'API',
+                icon: 'bi-code-slash',
+                gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                lastModified: new Date().toISOString().split('T')[0],
+                readTime: '5 min'
+            },
+            {
+                slug: 'node-sdk',
+                title: 'SDK Node.js',
+                description: 'Guide d\'utilisation du SDK Node.js officiel',
+                category: 'SDK',
+                icon: 'bi-box',
+                gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                lastModified: new Date().toISOString().split('T')[0],
+                readTime: '8 min'
+            },
+            {
+                slug: 'test',
+                title: 'Article de test',
+                description: 'Article de test pour vérifier le fonctionnement',
+                category: 'Guide',
+                icon: 'bi-rocket-takeoff',
+                gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                lastModified: new Date().toISOString().split('T')[0],
+                readTime: '3 min'
+            }
+        ];
 
         // Découvrir automatiquement tous les articles depuis GitHub
         async function discoverArticles() {
@@ -564,7 +603,7 @@
                 console.log('📝 Markdown files:', mdFiles.map(f => f.name));
                 
                 if (mdFiles.length === 0) {
-                    console.log('❌ No markdown files found');
+                    console.log('⚠ No markdown files found');
                     return [];
                 }
                 
@@ -578,7 +617,7 @@
                             return parseArticle(slug, content);
                         }
                     } catch (error) {
-                        console.warn(`❌ Failed to load ${slug}:`, error.message);
+                        console.warn(`⚠ Failed to load ${slug}:`, error.message);
                     }
                     return null;
                 });
@@ -592,7 +631,7 @@
                 return articles;
                 
             } catch (error) {
-                console.error('❌ Failed to discover articles:', error.message);
+                console.error('⚠ Failed to discover articles:', error.message);
                 return [];
             }
         }
@@ -620,7 +659,7 @@
         function parseArticle(slug, content) {
             const lines = content.split('\n');
             
-            // Extraire le titre (premier # trouve)
+            // Extraire le titre (premier # trouvé)
             const titleLine = lines.find(line => line.trim().startsWith('# '));
             const title = titleLine ? titleLine.replace(/^#+\s*/, '').trim() : slug;
             
@@ -686,7 +725,17 @@
             };
         }
 
-        // Rendre les articles
+        // Fonction pour formater la date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        // Fonction pour rendre les articles
         function renderArticles(articles) {
             const container = document.getElementById('articles-container');
             
@@ -713,65 +762,6 @@
             }
             
             const articlesHtml = articles.map((article, index) => `
-                <a href="/read/${article.slug}" class="article-card" style="animation-delay: ${index * 0.1}s;">
-                    <div class="article-header" style="background: ${article.gradient};">
-                        <div class="article-category">${article.category}</div>
-                        <i class="article-icon ${article.icon}"></i>
-                    </div>
-                    <div class="article-body">
-                        <h3 class="article-title">${article.title}</h3>
-                        <p class="article-description">${article.description}</p>
-                        <div class="article-meta">
-                            <span>Découvert automatiquement</span>
-                            <span>${article.readTime} de lecture</span>
-                        </div>
-                    </div>
-                </a>
-            `).join('');
-            
-            container.innerHTML = articlesHtml;
-        }
-
-        // Fonction pour formater la date
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('fr-FR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-        }
-
-        // Fonction pour formater la date
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('fr-FR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-        }
-
-        // Fonction pour rendre les articles
-        function renderArticles(articles) {
-            const container = document.getElementById('articles-container');
-            
-            if (articles.length === 0) {
-                container.innerHTML = `
-                    <div class="col-12 text-center">
-                        <div class="card">
-                            <div class="card-body p-5">
-                                <i class="bi bi-journal-x" style="font-size: 4rem; color: var(--text-muted);"></i>
-                                <h3 style="margin-top: 2rem; color: var(--text-primary);">Aucun article disponible</h3>
-                                <p style="color: var(--text-muted);">Les articles de documentation seront bientôt disponibles.</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                return;
-            }
-            
-            const articlesHtml = articles.map((article, index) => `
                 <a href="${generateReadUrl(article)}" class="article-card" style="animation-delay: ${index * 0.1}s;">
                     <div class="article-header" style="background: ${article.gradient};">
                         <div class="article-category">${article.category}</div>
@@ -781,7 +771,7 @@
                         <h3 class="article-title">${article.title}</h3>
                         <p class="article-description">${article.description}</p>
                         <div class="article-meta">
-                            <span>Mis à jour le ${formatDate(article.lastModified)}</span>
+                            <span>Découvert automatiquement</span>
                             <span>${article.readTime} de lecture</span>
                         </div>
                     </div>
@@ -841,12 +831,12 @@
             try {
                 // Charger les articles depuis GitHub
                 const articles = await discoverArticles();
-                renderArticles(articles);
+                renderArticles(articles.length > 0 ? articles : fallbackArticles);
                 setTimeout(animateCards, 100);
             } catch (error) {
                 console.error('Failed to load articles:', error);
                 // Fallback vers les articles de base
-                renderArticles(knownArticles);
+                renderArticles(fallbackArticles);
                 setTimeout(animateCards, 100);
             }
         });
