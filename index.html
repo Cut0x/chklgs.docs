@@ -541,41 +541,11 @@
 
         // Fonction pour générer l'URL de lecture
         function generateReadUrl(article) {
-            return `/read.html?article=${article.slug}`;
+            return `/read/?article=${article.slug}`;
         }
 
         // Articles de base en cas d'échec
         const fallbackArticles = [
-            {
-                slug: 'api',
-                title: 'API REST Documentation',
-                description: 'Documentation complète de l\'API REST checklogs.dev',
-                category: 'API',
-                icon: 'bi-code-slash',
-                gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                lastModified: new Date().toISOString().split('T')[0],
-                readTime: '5 min'
-            },
-            {
-                slug: 'node-sdk',
-                title: 'SDK Node.js',
-                description: 'Guide d\'utilisation du SDK Node.js officiel',
-                category: 'SDK',
-                icon: 'bi-box',
-                gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                lastModified: new Date().toISOString().split('T')[0],
-                readTime: '8 min'
-            },
-            {
-                slug: 'test',
-                title: 'Article de test',
-                description: 'Article de test pour vérifier le fonctionnement',
-                category: 'Guide',
-                icon: 'bi-rocket-takeoff',
-                gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-                lastModified: new Date().toISOString().split('T')[0],
-                readTime: '3 min'
-            }
         ];
 
         // Découvrir automatiquement tous les articles depuis GitHub
