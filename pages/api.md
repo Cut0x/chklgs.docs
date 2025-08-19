@@ -468,23 +468,5 @@ async function sendLogWithRetry(logData, maxRetries = 3) {
 
 ## Support et aide
 
-- **Documentation SDK** : Utilisez notre [SDK Node.js](/read/14/01/2024/node-sdk) pour une intégration plus simple
+- **Documentation SDK** : Utilisez notre [SDK Node.js](/read/?article=node-sdk) pour une intégration plus simple
 - **Support** : contact@checklogs.dev
-- **Status** : [status.checklogs.dev](https://status.checklogs.dev)
-
-## Changelog
-
-### Version 1.2 (15/01/2024)
-- Ajout du support des statistiques via `?stats=1`
-- Amélioration de la validation des données
-- Optimisation des performances
-
-### Version 1.1 (10/01/2024)
-- Ajout du filtrage par date avec `since` et `until`
-- Support amélioré du contexte JSON
-- Correction des erreurs de pagination
-
-### Version 1.0 (01/01/2024)
-- Version initiale de l'API
-- Support des niveaux de logs
-- Authentification par clé API
