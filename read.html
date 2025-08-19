@@ -742,8 +742,13 @@
 
         // Generate navigation between articles
         async function generateNavigation(currentSlug) {
-            // Try to get a list of available articles
-            const knownArticles = ['api', 'node-sdk', 'quick-start', 'best-practices', 'authentication', 'webhooks'];
+            const knownArticles = ['quick-start', 'api', 'node-sdk'];
+            const articleTitles = {
+                'quick-start': 'Guide de démarrage rapide',
+                'api': 'API REST Documentation', 
+                'node-sdk': 'SDK Node.js'
+            };
+            
             const currentIndex = knownArticles.indexOf(currentSlug);
             
             if (currentIndex === -1) return '';
@@ -754,41 +759,29 @@
             let navHtml = '';
             
             if (prevSlug) {
-                try {
-                    const prevContent = await fetch(`/pages/${prevSlug}.md`).then(r => r.text());
-                    const prevArticle = parseArticleFromContent(prevSlug, prevContent);
-                    navHtml += `
-                        <a href="/read/${prevSlug}" class="nav-article">
-                            <i class="bi bi-arrow-left" style="font-size: 1.5rem;"></i>
-                            <div class="nav-article-content">
-                                <div class="nav-article-label">Précédent</div>
-                                <div class="nav-article-title">${prevArticle.title}</div>
-                            </div>
-                        </a>
-                    `;
-                } catch (error) {
-                    navHtml += '<div></div>';
-                }
+                navHtml += `
+                    <a href="/read/${prevSlug}" class="nav-article">
+                        <i class="bi bi-arrow-left" style="font-size: 1.5rem;"></i>
+                        <div class="nav-article-content">
+                            <div class="nav-article-label">Précédent</div>
+                            <div class="nav-article-title">${articleTitles[prevSlug]}</div>
+                        </div>
+                    </a>
+                `;
             } else {
                 navHtml += '<div></div>';
             }
             
             if (nextSlug) {
-                try {
-                    const nextContent = await fetch(`/pages/${nextSlug}.md`).then(r => r.text());
-                    const nextArticle = parseArticleFromContent(nextSlug, nextContent);
-                    navHtml += `
-                        <a href="/read/${nextSlug}" class="nav-article" style="text-align: right;">
-                            <div class="nav-article-content">
-                                <div class="nav-article-label">Suivant</div>
-                                <div class="nav-article-title">${nextArticle.title}</div>
-                            </div>
-                            <i class="bi bi-arrow-right" style="font-size: 1.5rem;"></i>
-                        </a>
-                    `;
-                } catch (error) {
-                    navHtml += '<div></div>';
-                }
+                navHtml += `
+                    <a href="/read/${nextSlug}" class="nav-article" style="text-align: right;">
+                        <div class="nav-article-content">
+                            <div class="nav-article-label">Suivant</div>
+                            <div class="nav-article-title">${articleTitles[nextSlug]}</div>
+                        </div>
+                        <i class="bi bi-arrow-right" style="font-size: 1.5rem;"></i>
+                    </a>
+                `;
             } else {
                 navHtml += '<div></div>';
             }
@@ -853,8 +846,15 @@
         async function initializePage() {
             const slug = getArticleSlug();
             
+            console.log('=== DEBUG INFO ===');
+            console.log('Current URL:', window.location.href);
+            console.log('Pathname:', window.location.pathname);
+            console.log('Search:', window.location.search);
+            console.log('Article slug:', slug);
+            console.log('==================');
+            
             if (!slug) {
-                showError('Article non trouvé', 'L\'URL ne contient pas d\'article valide.');
+                showError('Article non trouvé', 'L\'URL ne contient pas d\'article valide. URL actuelle: ' + window.location.href);
                 return;
             }
             

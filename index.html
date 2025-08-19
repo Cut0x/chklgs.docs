@@ -532,17 +532,53 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     
     <script>
+        // Articles avec contenu de fallback
+        const fallbackArticles = [
+            {
+                slug: 'quick-start',
+                title: 'Guide de démarrage rapide',
+                description: 'Commencez à utiliser checklogs.dev en moins de 5 minutes',
+                category: 'Guide',
+                icon: 'bi-rocket-takeoff',
+                gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                lastModified: '2024-01-16',
+                readTime: '5 min'
+            },
+            {
+                slug: 'api',
+                title: 'API REST Documentation',
+                description: 'Documentation complète de l\'API REST pour envoyer et récupérer vos logs',
+                category: 'API',
+                icon: 'bi-code-slash',
+                gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                lastModified: '2024-01-15',
+                readTime: '10 min'
+            },
+            {
+                slug: 'node-sdk',
+                title: 'SDK Node.js',
+                description: 'Guide complet pour utiliser le SDK Node.js officiel de checklogs.dev',
+                category: 'SDK',
+                icon: 'bi-box',
+                gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                lastModified: '2024-01-14',
+                readTime: '15 min'
+            },
+            {
+                slug: 'test',
+                title: 'Article de test',
+                description: 'Article de test pour vérifier que le système fonctionne',
+                category: 'Test',
+                icon: 'bi-bug',
+                gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+                lastModified: '2024-01-17',
+                readTime: '2 min'
+            }
+        ];
+
         // Fonction pour découvrir les articles disponibles
         async function discoverArticles() {
-            const knownArticles = [
-                'api',
-                'node-sdk', 
-                'quick-start',
-                'best-practices',
-                'authentication',
-                'webhooks'
-            ];
-            
+            const knownArticles = ['quick-start', 'api', 'node-sdk', 'test'];
             const articles = [];
             
             for (const slug of knownArticles) {
@@ -552,12 +588,32 @@
                         const content = await response.text();
                         const article = parseArticleMetadata(slug, content);
                         articles.push(article);
+                        console.log(`✅ Loaded article from file: ${slug}`);
+                    } else {
+                        // Utiliser les articles de fallback
+                        const fallbackArticle = fallbackArticles.find(a => a.slug === slug);
+                        if (fallbackArticle) {
+                            articles.push(fallbackArticle);
+                            console.log(`📦 Using fallback for: ${slug}`);
+                        }
                     }
                 } catch (error) {
-                    console.warn(`Failed to load article ${slug}:`, error);
+                    console.warn(`❌ Failed to load article ${slug}, using fallback`);
+                    // Utiliser les articles de fallback
+                    const fallbackArticle = fallbackArticles.find(a => a.slug === slug);
+                    if (fallbackArticle) {
+                        articles.push(fallbackArticle);
+                    }
                 }
             }
             
+            // Si aucun article n'a été trouvé, utiliser tous les fallbacks
+            if (articles.length === 0) {
+                console.log('🔄 No articles found, using all fallbacks');
+                return fallbackArticles;
+            }
+            
+            console.log(`📚 Total articles loaded: ${articles.length}`);
             return articles;
         }
 
