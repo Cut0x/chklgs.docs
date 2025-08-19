@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/read/(.*)",
+      "destination": "/read.html?article=$1"
+    }
+  ]
+}

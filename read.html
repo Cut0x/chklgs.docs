@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Lecture - checklogs.dev</title>
+    <meta name="description" id="page-description" content="Documentation checklogs.dev">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" rel="stylesheet">
+    
+    <style>
+        /* Variables CSS identiques */
+        :root {
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --secondary-color: #64748b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #64748b;
+            --border-color: #334155;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Navigation identique */
+        .navbar {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-primary) !important;
+            text-decoration: none;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-triangle {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-style: solid;
+        }
+
+        .logo-triangle-1 {
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 14px solid #3b82f6;
+            top: 2px;
+        }
+
+        .logo-triangle-2 {
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 10px solid #1d4ed8;
+            top: 8px;
+        }
+
+        .logo-triangle-3 {
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-bottom: 6px solid #1e40af;
+            top: 12px;
+        }
+
+        .nav-link {
+            color: var(--text-secondary) !important;
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color) !important;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .btn-outline-light {
+            background: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        /* Article Header */
+        .article-header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 6rem 0 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .article-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%23334155" stroke-width="0.5" opacity="0.3"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .article-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .article-breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .article-breadcrumb a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .article-title {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+        }
+
+        .text-gradient {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .article-meta {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .article-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .article-category {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary-color);
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        /* Table of Contents */
+        .toc-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            position: sticky;
+            top: 100px;
+        }
+
+        .toc-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-list a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: block;
+            padding: 0.25rem 0;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .toc-list a:hover,
+        .toc-list a.active {
+            color: var(--primary-color);
+            background: rgba(59, 130, 246, 0.1);
+            padding-left: 0.5rem;
+        }
+
+        .toc-list .toc-h3 {
+            padding-left: 1rem;
+            font-size: 0.875rem;
+        }
+
+        /* Article Content */
+        .article-main {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            min-height: 60vh;
+        }
+
+        .markdown-content {
+            max-width: none;
+        }
+
+        .markdown-content h1,
+        .markdown-content h2,
+        .markdown-content h3,
+        .markdown-content h4,
+        .markdown-content h5,
+        .markdown-content h6 {
+            color: var(--text-primary);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .markdown-content h1 {
+            font-size: 2.5rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .markdown-content h2 {
+            font-size: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .markdown-content h3 {
+            font-size: 1.5rem;
+        }
+
+        .markdown-content p {
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .markdown-content ul,
+        .markdown-content ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .markdown-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .markdown-content code {
+            background: var(--bg-tertiary);
+            color: var(--primary-color);
+            padding: 0.125rem 0.25rem;
+            border-radius: 4px;
+            font-size: 0.875em;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+        }
+
+        .markdown-content pre {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .markdown-content pre code {
+            background: none;
+            color: var(--text-primary);
+            padding: 0;
+        }
+
+        .markdown-content blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            background: rgba(59, 130, 246, 0.05);
+            border-radius: 0 8px 8px 0;
+        }
+
+        .markdown-content blockquote p {
+            margin: 0;
+            font-style: italic;
+        }
+
+        .markdown-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .markdown-content th,
+        .markdown-content td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .markdown-content th {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .markdown-content td {
+            color: var(--text-secondary);
+        }
+
+        .markdown-content a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .markdown-content a:hover {
+            text-decoration: underline;
+        }
+
+        /* Loading States */
+        .loading-skeleton {
+            background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-secondary) 50%, var(--bg-tertiary) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .loading-text {
+            height: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .loading-title {
+            height: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Navigation between articles */
+        .article-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .nav-article {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            padding: 1rem;
+            border-radius: 12px;
+            max-width: 45%;
+        }
+
+        .nav-article:hover {
+            color: var(--text-primary);
+            background: rgba(59, 130, 246, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .nav-article-content {
+            flex: 1;
+        }
+
+        .nav-article-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-article-title {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Error States */
+        .error-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .error-icon {
+            font-size: 4rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .error-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .error-description {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .article-title {
+                font-size: 2rem;
+            }
+            
+            .article-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .toc-container {
+                position: relative;
+                top: auto;
+            }
+            
+            .nav-article {
+                max-width: 100%;
+                margin-bottom: 1rem;
+            }
+            
+            .article-navigation {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <div class="logo-container">
+                    <div class="logo-icon">
+                        <div class="logo-triangle logo-triangle-1"></div>
+                        <div class="logo-triangle logo-triangle-2"></div>
+                        <div class="logo-triangle logo-triangle-3"></div>
+                    </div>
+                    <span class="logo-text">checklogs.dev</span>
+                </div>
+            </a>
+            
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Documentation</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://checklogs.dev">Retour au site</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://checklogs.dev/blog.php">Blog</a>
+                    </li>
+                </ul>
+                
+                <div class="d-flex gap-2">
+                    <a href="https://checklogs.dev/auth/login.php" class="btn btn-outline-light">
+                        <i class="bi bi-box-arrow-in-right"></i> Connexion
+                    </a>
+                    <a href="https://checklogs.dev/auth/register.php" class="btn btn-primary">
+                        <i class="bi bi-rocket-takeoff"></i> Commencer
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Article Header -->
+    <header class="article-header">
+        <div class="container">
+            <div class="article-content">
+                <nav class="article-breadcrumb">
+                    <a href="/">Documentation</a>
+                    <i class="bi bi-chevron-right"></i>
+                    <span id="breadcrumb-category">Chargement...</span>
+                </nav>
+                
+                <h1 id="article-title-display" class="article-title">
+                    <span class="loading-skeleton loading-title"></span>
+                </h1>
+                
+                <div id="article-meta-display" class="article-meta">
+                    <div class="loading-skeleton" style="width: 100px; height: 20px;"></div>
+                    <div class="loading-skeleton" style="width: 150px; height: 20px;"></div>
+                    <div class="loading-skeleton" style="width: 120px; height: 20px;"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Article Content -->
+    <div class="container" style="margin-top: 2rem; margin-bottom: 4rem;">
+        <div class="row">
+            <!-- Table of Contents -->
+            <div class="col-lg-3 order-lg-1 order-2">
+                <div id="toc-container" class="toc-container">
+                    <div class="toc-title">
+                        <i class="bi bi-list-ul"></i>
+                        Table des matières
+                    </div>
+                    <ul id="toc-list" class="toc-list">
+                        <li><div class="loading-skeleton loading-text"></div></li>
+                        <li><div class="loading-skeleton loading-text"></div></li>
+                        <li><div class="loading-skeleton loading-text"></div></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-lg-9 order-lg-2 order-1">
+                <article class="article-main">
+                    <div id="markdown-content" class="markdown-content">
+                        <!-- Loading skeletons -->
+                        <div class="loading-skeleton loading-title"></div>
+                        <div class="loading-skeleton loading-text"></div>
+                        <div class="loading-skeleton loading-text" style="width: 80%;"></div>
+                        <div class="loading-skeleton loading-text"></div>
+                        <div class="loading-skeleton loading-text" style="width: 90%;"></div>
+                    </div>
+                    
+                    <!-- Navigation between articles -->
+                    <nav id="article-navigation" class="article-navigation" style="display: none;">
+                        <!-- Will be populated dynamically -->
+                    </nav>
+                </article>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+    
+    <script>
+        // Get article slug from URL
+        function getArticleSlug() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('article');
+        }
+
+        // Parse article metadata from markdown content
+        function parseArticleFromContent(slug, content) {
+            const lines = content.split('\n');
+            const title = lines.find(line => line.startsWith('# '))?.replace('# ', '') || slug;
+            
+            // Extract description (first paragraph after title)
+            let description = '';
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].startsWith('# ')) {
+                    // Find first non-empty paragraph after title
+                    for (let j = i + 1; j < lines.length; j++) {
+                        if (lines[j].trim() && !lines[j].startsWith('#') && !lines[j].startsWith('```')) {
+                            description = lines[j].trim();
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            
+            // Auto-categorization based on title/content
+            let category = 'Guide';
+            
+            if (title.toLowerCase().includes('api') || content.includes('endpoint')) {
+                category = 'API';
+            } else if (title.toLowerCase().includes('sdk') || title.toLowerCase().includes('node')) {
+                category = 'SDK';
+            } else if (title.toLowerCase().includes('quick') || title.toLowerCase().includes('start')) {
+                category = 'Guide';
+            } else if (title.toLowerCase().includes('practice') || title.toLowerCase().includes('pratique')) {
+                category = 'Guide';
+            } else if (title.toLowerCase().includes('auth') || title.toLowerCase().includes('securit')) {
+                category = 'Sécurité';
+            } else if (title.toLowerCase().includes('webhook') || title.toLowerCase().includes('alert')) {
+                category = 'Intégration';
+            }
+
+            // Estimate reading time
+            const wordCount = content.split(/\s+/).length;
+            const readTime = Math.max(1, Math.ceil(wordCount / 200)) + ' min';
+            
+            return {
+                slug,
+                title,
+                description: description || 'Documentation checklogs.dev',
+                category,
+                lastModified: new Date().toISOString().split('T')[0],
+                readTime
+            };
+        }
+
+        // Load markdown content
+        async function loadMarkdownContent(slug) {
+            try {
+                const response = await fetch(`/pages/${slug}.md`);
+                if (!response.ok) {
+                    throw new Error(`Failed to load article: ${response.status}`);
+                }
+                return await response.text();
+            } catch (error) {
+                console.error('Error loading markdown:', error);
+                return null;
+            }
+        }
+
+        // Generate table of contents
+        function generateTOC(content) {
+            const headers = content.match(/^#{1,3}\s+.+$/gm);
+            if (!headers) return '';
+            
+            const toc = headers.map(header => {
+                const level = header.match(/^#+/)[0].length;
+                const text = header.replace(/^#+\s+/, '');
+                const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+                const className = level > 2 ? 'toc-h3' : '';
+                
+                return `<li class="${className}"><a href="#${id}">${text}</a></li>`;
+            }).join('');
+            
+            return toc;
+        }
+
+        // Add IDs to headers for anchor links
+        function addHeaderIds(html) {
+            return html.replace(/<h([1-3])>(.*?)<\/h[1-3]>/g, (match, level, text) => {
+                const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+                return `<h${level} id="${id}">${text}</h${level}>`;
+            });
+        }
+
+        // Update page metadata
+        function updatePageMetadata(article) {
+            document.getElementById('page-title').textContent = `${article.title} - checklogs.dev`;
+            document.getElementById('page-description').content = article.description;
+            
+            // Update header
+            document.getElementById('breadcrumb-category').textContent = article.category;
+            document.getElementById('article-title-display').innerHTML = `<span class="text-gradient">${article.title}</span>`;
+            
+            // Update meta display
+            const metaDisplay = document.getElementById('article-meta-display');
+            metaDisplay.innerHTML = `
+                <div class="article-category">${article.category}</div>
+                <div class="article-meta-item">
+                    <i class="bi bi-calendar"></i>
+                    Mis à jour le ${new Date(article.lastModified).toLocaleDateString('fr-FR')}
+                </div>
+                <div class="article-meta-item">
+                    <i class="bi bi-clock"></i>
+                    ${article.readTime} de lecture
+                </div>
+            `;
+        }
+
+        // Generate navigation between articles
+        async function generateNavigation(currentSlug) {
+            // Try to get a list of available articles
+            const knownArticles = ['api', 'node-sdk', 'quick-start', 'best-practices', 'authentication', 'webhooks'];
+            const currentIndex = knownArticles.indexOf(currentSlug);
+            
+            if (currentIndex === -1) return '';
+            
+            const prevSlug = currentIndex > 0 ? knownArticles[currentIndex - 1] : null;
+            const nextSlug = currentIndex < knownArticles.length - 1 ? knownArticles[currentIndex + 1] : null;
+            
+            let navHtml = '';
+            
+            if (prevSlug) {
+                try {
+                    const prevContent = await fetch(`/pages/${prevSlug}.md`).then(r => r.text());
+                    const prevArticle = parseArticleFromContent(prevSlug, prevContent);
+                    navHtml += `
+                        <a href="/read/${prevSlug}" class="nav-article">
+                            <i class="bi bi-arrow-left" style="font-size: 1.5rem;"></i>
+                            <div class="nav-article-content">
+                                <div class="nav-article-label">Précédent</div>
+                                <div class="nav-article-title">${prevArticle.title}</div>
+                            </div>
+                        </a>
+                    `;
+                } catch (error) {
+                    navHtml += '<div></div>';
+                }
+            } else {
+                navHtml += '<div></div>';
+            }
+            
+            if (nextSlug) {
+                try {
+                    const nextContent = await fetch(`/pages/${nextSlug}.md`).then(r => r.text());
+                    const nextArticle = parseArticleFromContent(nextSlug, nextContent);
+                    navHtml += `
+                        <a href="/read/${nextSlug}" class="nav-article" style="text-align: right;">
+                            <div class="nav-article-content">
+                                <div class="nav-article-label">Suivant</div>
+                                <div class="nav-article-title">${nextArticle.title}</div>
+                            </div>
+                            <i class="bi bi-arrow-right" style="font-size: 1.5rem;"></i>
+                        </a>
+                    `;
+                } catch (error) {
+                    navHtml += '<div></div>';
+                }
+            } else {
+                navHtml += '<div></div>';
+            }
+            
+            return navHtml;
+        }
+
+        // Show error state
+        function showError(title, description) {
+            const content = document.getElementById('markdown-content');
+            content.innerHTML = `
+                <div class="error-state">
+                    <i class="bi bi-exclamation-triangle error-icon"></i>
+                    <h2 class="error-title">${title}</h2>
+                    <p class="error-description">${description}</p>
+                    <a href="/" class="btn btn-primary">
+                        <i class="bi bi-arrow-left"></i>
+                        Retour à la documentation
+                    </a>
+                </div>
+            `;
+            
+            // Hide TOC
+            document.getElementById('toc-container').style.display = 'none';
+        }
+
+        // Smooth scroll for TOC links
+        function setupTOCScrolling() {
+            document.addEventListener('click', function(e) {
+                const tocLink = e.target.closest('.toc-list a');
+                if (tocLink && tocLink.getAttribute('href').startsWith('#')) {
+                    e.preventDefault();
+                    const targetId = tocLink.getAttribute('href').substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                        
+                        // Update active TOC link
+                        document.querySelectorAll('.toc-list a').forEach(link => link.classList.remove('active'));
+                        tocLink.classList.add('active');
+                    }
+                }
+            });
+        }
+
+        // Navbar scroll effect
+        function handleNavbarScroll() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.style.background = 'rgba(15, 23, 42, 0.98)';
+                navbar.style.backdropFilter = 'blur(20px)';
+            } else {
+                navbar.style.background = 'rgba(15, 23, 42, 0.95)';
+                navbar.style.backdropFilter = 'blur(10px)';
+            }
+        }
+
+        // Main initialization
+        async function initializePage() {
+            const slug = getArticleSlug();
+            
+            if (!slug) {
+                showError('Article non trouvé', 'L\'URL ne contient pas d\'article valide.');
+                return;
+            }
+            
+            // Load markdown content
+            const markdownContent = await loadMarkdownContent(slug);
+            
+            if (!markdownContent) {
+                showError('Article non trouvé', `L'article "${slug}" n'existe pas dans notre documentation.`);
+                return;
+            }
+            
+            // Parse article metadata
+            const article = parseArticleFromContent(slug, markdownContent);
+            
+            // Update page metadata
+            updatePageMetadata(article);
+            
+            // Parse markdown and render
+            const htmlContent = marked.parse(markdownContent);
+            const contentWithIds = addHeaderIds(htmlContent);
+            
+            // Update content
+            document.getElementById('markdown-content').innerHTML = contentWithIds;
+            
+            // Generate and update TOC
+            const tocContent = generateTOC(markdownContent);
+            document.getElementById('toc-list').innerHTML = tocContent || '<li>Aucun titre trouvé</li>';
+            
+            // Generate navigation
+            const navigationHtml = await generateNavigation(slug);
+            const navElement = document.getElementById('article-navigation');
+            navElement.innerHTML = navigationHtml;
+            navElement.style.display = navigationHtml ? 'flex' : 'none';
+            
+            // Highlight code blocks
+            document.querySelectorAll('pre code').forEach(block => {
+                hljs.highlightElement(block);
+            });
+            
+            // Setup TOC scrolling
+            setupTOCScrolling();
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', initializePage);
+        window.addEventListener('scroll', handleNavbarScroll);
+    </script>
+</body>
+</html>
